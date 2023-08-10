@@ -1,0 +1,15 @@
+librosa
+matplotlib
+moviepy
+numpy
+pandas
+torch
+torchsummary
+torchvision
+av
+moviepy
+einops
+tensorboard
+timm
+mmcv==1.3.18
+pillow==9.4.0
