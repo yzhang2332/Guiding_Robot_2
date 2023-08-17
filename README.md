@@ -22,7 +22,7 @@ tensorboard --logdir train_log --bind_all --port 7780
 
 ![guide_code_structure](guide_code_structure.jpg)
 
-## 数据集格式
+## Dataset
 
 annotations.csv
 
