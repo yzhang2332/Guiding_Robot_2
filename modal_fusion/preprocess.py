@@ -110,22 +110,23 @@ import pandas as pd
 #             if f_end > df.shape[0]:
 #                 df.loc[f_start:df.shape[0]].to_csv(os.path.join(to_dir, name+'_'+str(f_start)+'_'+str(df.shape[0])+'.csv'))
 
-
-def preprocess(annotations_file=None, original_video_dir=None, original_pose_dir=None, original_touch_dir=None, 
-               audio_dir=None, video_dir=None, touch_dir=None, pose_dir=None, 
+# 增加雷达和rgb
+# audio替换为imu, touch替换为force, pose替换为motor; 全改用resnet
+def preprocess(annotations_file=None, original_video_dir=None, original_motor_dir=None, original_force_dir=None, 
+               imu_dir=None, video_dir=None, force_dir=None, motor_dir=None, 
                period=6, step=1, fps=120, 
                normalize=True):
-    '''Generate subaudios, subvideos, subtouches and subposes based on the annotations_file with original data.
+    '''Generate subvideos, subforces, subimu, and submotors based on the annotations_file with original data.
     
     Arguments:
         annotations_file (string): Directory of the original annotation file.
         original_video_dir (string): Directory of the original video files.
-        original_pose_dir (string): Directory of the original pose files.
-        original_touch_dir (string): Directory of the original touch files.
-        audio_dir (string): Directory that new short audio files will go to.
+        original_motor_dir (string): Directory of the original mptor files.
+        original_force_dir (string): Directory of the original force files.
+        imu_dir (string): Directory that new imu imu files will go to.
         video_dir (string): Directory that new short video files will go to.
-        touch_dir (string): Directory that new short touch files will go to.
-        pose_dir (string): Directory that new short pose files will go to.
+        force_dir (string): Directory that new short force files will go to.
+        motor_dir (string): Directory that new short motor files will go to.
         period (int): Time interval that the new files span in seconds.
         step (int): Time shift between two adjacent clips in seconds.
         fps (int): The number of frames per second when recording the poses.
@@ -136,7 +137,7 @@ def preprocess(annotations_file=None, original_video_dir=None, original_pose_dir
 
     # write new annotation-file head
     with open('modal_fusion/datasets/test_data/processed_data/annotations.csv', 'w') as f:
-        f.write('audio,video,touch,pose,label\n')
+        f.write('imu,video,touch,pose,label\n')
     f.close()
 
     # traverse through lines of data instances
@@ -225,7 +226,7 @@ def preprocessPose(pose_path=None, to_pose_dir=None, period=6, step=1, fps=120, 
         f.writelines(data)
     f.close()
     df = pd.read_csv(pure_data_path, index_col='Frame')
-    df = df.interpolate(method='cubicspline')
+    df = df.interpolate(method='cubicspline') # 插值
     # normalize the pose csv file values
     if normalize:
         max_values = []
@@ -244,6 +245,7 @@ def preprocessPose(pose_path=None, to_pose_dir=None, period=6, step=1, fps=120, 
     t_end = period
     f_start = 1
     f_end = period*fps
+    # 窗口的长度为period，窗口之间的时间间隔为step
     if f_end > df.shape[0]:
         print(f'{pose_path} is too short to slide on!')
         return
@@ -263,7 +265,7 @@ def preprocessPose(pose_path=None, to_pose_dir=None, period=6, step=1, fps=120, 
         t_end += step
         f_start += step*fps
         f_end += step*fps
-
+    # label 是窗口结束后的某帧的数据；如果超出了总帧数，就取最后一帧
     return pose_clip_names, labels
 
 

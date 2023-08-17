@@ -9,7 +9,8 @@ import feature_abstract.audio_feature as audio_feature
 import warnings
 warnings.filterwarnings("ignore")
 
-
+# 增加雷达和rgb
+# audio替换为imu, touch替换为force, pose替换为motor
 class DogDataset(Dataset):
     """This is a multimodal dataset including videos, audios, tactile images and pose vectors for a robotic dog project.
 
@@ -19,7 +20,7 @@ class DogDataset(Dataset):
         audio_transform, video_transform, touch_transform, pose_transform: Transforms for the raw data (defined below).
     """
 
-    def __init__(self, annotations_file=None, audio_dir=None, video_dir=None, touch_dir=None, pose_dir=None, audio_transform=None, video_transform=None, touch_transform=None, pose_transform=None):
+    def __init__(self, annotations_file=None, imu_dir=None, video_dir=None, force_dir=None, motor_dir=None, audio_transform=None, video_transform=None, touch_transform=None, pose_transform=None):
         """Init dataset with annotations, data locations, transforms.
         
         Arguments:
