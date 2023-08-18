@@ -60,7 +60,7 @@ test_dataset = DogDataset(annotations_file='modal_fusion/datasets/test_data/proc
                           rgb_dir="modal_fusion/datasets/test_data/processed_data/rgb",
                           video_dir="modal_fusion/datasets/test_data/processed_data/video",
                           imu_dir="modal_fusion/datasets/test_data/processed_data/imu",
-                          point_cloud_dir="modal_fusion/datasets/test_data/processed_data/point_cloud",
+                          point_cloud_dir="modal_fusion/datasets/test_data/processed_data/lidar",
                           sensor_dir="modal_fusion/datasets/test_data/processed_data/sensor",
                           motor_dir="modal_fusion/datasets/test_data/processed_data/motor"
                           )
@@ -87,7 +87,7 @@ for epoch in range(args.epochs):
     for idx, sample_batch in enumerate(test_dataloader, 0):
         optimizer.zero_grad()
         outputs = model(sample_batch['rgb'].to(args.device), sample_batch['video'].to(args.device),
-                        sample_batch['imu'].to(args.device), sample_batch['point_cloud'].to(args.device),
+                        sample_batch['imu'].to(args.device), sample_batch['lidar'].to(args.device),
                         sample_batch['sensor'].to(args.device), sample_batch['motor'].to(args.device))
 
         print(outputs)
@@ -113,7 +113,7 @@ for epoch in range(args.epochs):
         for idx, sample_batch in enumerate(test_dataloader, 0):
             # outputs = model(sample_batch['audio'].unsqueeze(1).to(args.device), sample_batch['video'].to(args.device), sample_batch['touch'].to(args.device), sample_batch['pose'].unsqueeze(1).to(args.device))
             outputs = model(sample_batch['rgb'].to(args.device), sample_batch['video'].to(args.device),
-                            sample_batch['imu'].to(args.device), sample_batch['point_cloud'].to(args.device),
+                            sample_batch['imu'].to(args.device), sample_batch['lidar'].to(args.device),
                             sample_batch['sensor'].to(args.device), sample_batch['motor'].to(args.device))
 
             loss = criterion(outputs, sample_batch['label'].to(args.device))

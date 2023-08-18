@@ -8,8 +8,8 @@ import open3d
 
 
 def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=None, original_imu_dir=None,
-               original_point_cloud_dir=None, original_sensor_dir=None, original_motor_dir=None,
-               rgb_dir=None, video_dir=None, imu_dir=None, point_cloud_dir=None, sensor_dir=None, motor_dir=None,
+               original_lidar_dir=None, original_sensor_dir=None, original_motor_dir=None,
+               rgb_dir=None, video_dir=None, imu_dir=None, lidar_dir=None, sensor_dir=None, motor_dir=None,
                period=6, step=1, normalize=True):
     '''Generate subaudios, subvideos, subtouches and subposes based on the annotations_file with original data.
 
@@ -18,13 +18,13 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
         original_rgb_dir (string): Directory of the original RGB image files.
         original_video_dir (string): Directory of the original video files.
         original_imu_dir (string): Directory of the original IMU files.
-        original_point_cloud_dir (string): Directory of the original point cloud files.
+        original_lidar_dir (string): Directory of the original point cloud files.
         original_sensor_dir (string): Directory of the original sensor files.
         original_motor_dir (string): Directory of the original motor files.
         rgb_dir (string): Directory that new short RGB image files will go to.
         video_dir (string): Directory that new short video files will go to.
         imu_dir (string): Directory that new short IMU files will go to.
-        point_cloud_dir (string): Directory that new short point cloud files will go to.
+        lidar_dir (string): Directory that new short point cloud files will go to.
         sensor_dir (string): Directory that new short sensor files will go to.
         motor_dir (string): Directory that new short motor files will go to.
         period (int): Time interval that the new files span in seconds.
@@ -37,7 +37,7 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
 
     # write new annotation-file head
     with open('modal_fusion/datasets/test_data/processed_data/annotations.csv', 'w') as f:
-        f.write('point_cloud,rgb,video,imu,sensor,motor,label\n')
+        f.write('lidar,rgb,video,imu,sensor,motor,label\n')
     f.close()
 
     # traverse through lines of data instances
@@ -47,7 +47,7 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
         data_instance = init_annotations.iloc[i]
 
         # find indicated files
-        point_cloud_path = os.path.join(original_point_cloud_dir, data_instance['point_cloud'])
+        lidar_path = os.path.join(original_lidar_dir, data_instance['lidar'])
         rgb_path = os.path.join(original_rgb_dir, data_instance['rgb'])
         video_path = os.path.join(original_video_dir, data_instance['video'])
         imu_path = os.path.join(original_imu_dir, data_instance['imu'])
@@ -55,7 +55,7 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
         motor_path = os.path.join(original_motor_dir, data_instance['motor'])
 
         # preprocess the original RGB, video, IMU, point cloud, sensor ,motor files; generate clips and labels
-        point_cloud_clip_names = preprocessPointCloud(point_cloud_path, point_cloud_dir, period=period, step=step)
+        lidar_clip_names = preprocessLidar(lidar_path, lidar_dir, period=period, step=step)
         #rgb_clip_names = preprocessRGB(rgb_path, rgb_dir, period=period, step=step)
         video_clip_names = preprocessVideo(video_path, video_dir, period=period, step=step)
         imu_clip_names = preprocessIMU(imu_path, imu_dir, period=period, step=step)
@@ -63,7 +63,7 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
         motor_clip_names, labels = preprocessMotor(motor_path, motor_dir, period=period, step=step)
 
         # align the clip_name lists for new annotations  对齐
-        clip_name_lists = [point_cloud_clip_names,  video_clip_names, imu_clip_names, sensor_clip_names,motor_clip_names]
+        clip_name_lists = [lidar_clip_names,  video_clip_names, imu_clip_names, sensor_clip_names,motor_clip_names]
         min_length = min([len(lst) for lst in clip_name_lists])
         for j in range(len(clip_name_lists)):
             if len(clip_name_lists[j]) > min_length:
@@ -71,44 +71,44 @@ def preprocess(annotations_file=None, original_rgb_dir=None, original_video_dir=
                 del clip_name_lists[j][-diff:]
 
         # write the new annotation file
-        for point_cloud, rgb, video, imu, sensor, motor, label in zip(*clip_name_lists, labels):
-            line = point_cloud + ',' + rgb + ',' + video + ',' + imu + ',' + sensor + ',' + motor + ',' + '_'.join([str(item) for item in label.values.tolist()]) + '\n'
+        for lidar, rgb, video, imu, sensor, motor, label in zip(*clip_name_lists, labels):
+            line = lidar + ',' + rgb + ',' + video + ',' + imu + ',' + sensor + ',' + motor + ',' + '_'.join([str(item) for item in label.values.tolist()]) + '\n'
             with open('modal_fusion/datasets/test_data/processed_data/annotations.csv', 'a') as f:
                 f.write(line)
             f.close()
 
 
 # point cloud  ???暂时这么写的，可改，pcd格式
-def preprocessPointCloud(point_cloud_path=None, to_point_cloud_dir=None, period=6, step=1, point_cloud_ext='.pcd'):
+def preprocessLidar(lidar_path=None, to_lidar_dir=None, period=6, step=1, lidar_ext='.pcd'):
     '''Generate subpoint cloud files from original point cloud file.
 
     Arguments:
-        point_cloud_path (string): Directory of the original point cloud file.
-        to_point_cloud_dir (string): Directory that new short point cloud files will go to.
+        lidar_path (string): Directory of the original point cloud file.
+        to_lidar_dir (string): Directory that new short point cloud files will go to.
         period (int): Time interval that the new files span in seconds.
         step (int): Time shift between two adjacent clips in seconds.
-        point_cloud_ext (string): The point cloud file extension.
+        lidar_ext (string): The point cloud file extension.
     '''
     # read point cloud file
-    point_cloud_data = open3d.io.read_point_cloud(point_cloud_path)
+    lidar_data = open3d.io.read_lidar(lidar_path)
     # read the point cloud file name without extension
-    name = os.path.basename(point_cloud_path).rpartition('.')[0]
+    name = os.path.basename(lidar_path).rpartition('.')[0]
     # use a window to slide on the point cloud data and separate the point cloud parts
     t_start = 0
     t_end = period
-    if t_end > len(point_cloud_data.points):
-        print(f'{point_cloud_path} is too short to slide on!')
+    if t_end > len(lidar_data.points):
+        print(f'{lidar_path} is too short to slide on!')
         return
-    point_cloud_clip_names = []
-    while t_end <= len(point_cloud_data.points):
-        point_cloud_clip = point_cloud_data.crop(t_start, t_end)
+    lidar_clip_names = []
+    while t_end <= len(lidar_data.points):
+        lidar_clip = lidar_data.crop(t_start, t_end)
         name_clip = name + '_' + str(t_start) + '_' + str(t_end)
-    open3d.io.write_point_cloud(os.path.join(to_point_cloud_dir, name_clip + point_cloud_ext), point_cloud_clip)
-    point_cloud_clip_names.append(name_clip + point_cloud_ext)
+    open3d.io.write_lidar(os.path.join(to_lidar_dir, name_clip + lidar_ext), lidar_clip)
+    lidar_clip_names.append(name_clip + lidar_ext)
     t_start += step
     t_end += step
 
-    return point_cloud_clip_names
+    return lidar_clip_names
 
 
 # rgb  jpg格式
@@ -289,13 +289,13 @@ def preprocessMotor(motor_path=None, to_motor_dir=None, period=6, step=1):
 
 if __name__ == "__main__":
     preprocess(annotations_file='modal_fusion/datasets/test_data/raw_data/original_annotations.csv',
-               original_point_cloud_dir='modal_fusion/datasets/test_data/raw_data/raw_point_cloud',
+               original_lidar_dir='modal_fusion/datasets/test_data/raw_data/raw_lidar',
               # original_rgb_dir='modal_fusion/datasets/test_data/raw_rgb',
                original_video_dir='modal_fusion/datasets/test_data/raw_data/raw_video',
                original_imu_dir='modal_fusion/datasets/test_data/raw_data/raw_imu',
                original_sensor_dir='modal_fusion/datasets/test_data/raw_data/raw_sensor',
                original_motor_dir='modal_fusion/datasets/test_data/raw_data/raw_motor',
-               point_cloud_dir='modal_fusion/datasets/test_data/processed_data/point_cloud',
+               lidar_dir='modal_fusion/datasets/test_data/processed_data/lidar',
               # rgb_dir='modal_fusion/datasets/test_data/processed_data/rgb',
                video_dir='modal_fusion/datasets/test_data/processed_data/video',
                imu_dir='modal_fusion/datasets/test_data/processed_data/imu',

@@ -27,7 +27,7 @@ tensorboard --logdir train_log --bind_all --port 7780
 annotations.csv
 
 ```
-point_cloud,rgb,video,imu,sensor,motor,label
+lidar,rgb,video,imu,sensor,motor,label
 ```
 
 文件命名

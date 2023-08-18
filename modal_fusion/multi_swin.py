@@ -13,7 +13,7 @@ class MultiSwin(nn.Module):
         rgb:resnet
         imu:resnet
         sensor:resnet
-        point_cloud:?
+        lidar:?
         video:swin transformer
         motor:resnet
         """
@@ -22,7 +22,7 @@ class MultiSwin(nn.Module):
         self.rgb_model= resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
         self.imu_model= resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
         self.sensor_model= resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
-        self.point_cloud_model= resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
+        self.lidar_model= resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
         self.video_model = swin_tiny_patch4_window7_224(num_classes=output_classes, pretrained=pretrained)
         self.motor_model=resnet18.ResNet18(input_channels=input_channels, output_classes=output_classes)
         # self.bn = nn.BatchNorm1d(output_classes)
@@ -57,15 +57,15 @@ class MultiSwin(nn.Module):
 #             print(audio_out,'\n',video_out,'\n',touch_out,'\n',pose_out,'\n',fusion_in,'\n',fusion_out)
 #
 #         return fusion_out
-    def forward(self, rgb, video, imu,point_cloud,sensor,motor):
+    def forward(self, rgb, video, imu,lidar,sensor,motor):
         rgb_out = self.ln(self.rgb_model(rgb))
         video_out = self.ln(self.video_model(video))
         imu_out = self.ln(self.imu_model(imu))
-        point_cloud_out = self.ln(self.point_cloud_model(point_cloud))
+        lidar_out = self.ln(self.lidar_model(lidar))
         sensor_out=self.ln(self.sensor_model(sensor))
         motor_out=self.ln(self.motor_model(motor))
 
-        fusion_in = torch.cat((rgb_out, video_out, imu_out, point_cloud_out, sensor_out,motor_out),dim=1)
+        fusion_in = torch.cat((rgb_out, video_out, imu_out, lidar_out, sensor_out,motor_out),dim=1)
         fusion_in = self.relu(fusion_in)
         fusion_out = self.fusion_model(fusion_in)
 
