@@ -138,37 +138,3 @@ if __name__ == '__main__':
     output_vector = fusion_transformer(input_vector)
     # torchsummary.summary(fusion_transformer, (1, 400))
     print(output_vector.shape)
-
-# import numpy as np
-#
-# def get_tn_1_data():
-#     # 从txt文件中读取数据
-#     data = np.loadtxt('D:/xxy/大二/夏令营/cyber_doge-main/modal_fusion/datasets/motor.txt')
-#
-#     # 提取电机参数数据
-#     motor_params = data[:, 1:3]  # 第二列和第三列是电机参数
-#
-#     # 返回电机参数数据
-#     return motor_params
-#
-# #用tn-1的电机参数数据做decoder部分的label做自监督训练
-# optimizer = torch.optim.Adam(fusion_transformer.parameters(), lr=0.001)
-# num_epochs=10
-# # 训练过程
-# for epoch in range(num_epochs):
-#     # 获取tn-1的电机参数数据
-#     tn_1_data = get_tn_1_data()
-#
-#     # 前向传播
-#     output = fusion_transformer(tn_1_data)
-#
-#     # 计算损失
-#     loss = fusion_transformer.self_supervised_loss(output, tn_1_data)
-#
-#     # 反向传播和优化
-#     optimizer.zero_grad()
-#     loss.backward()
-#     optimizer.step()
-#
-#     # 打印损失
-#     print('Epoch [{}/{}], Loss: {:.4f}'.format(epoch+1, num_epochs, loss.item()))

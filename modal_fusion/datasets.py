@@ -35,7 +35,6 @@ class DogDataset(Dataset):
 
     def __len__(self):
         """annotations的行数(数据集的长度)"""
-
         return len(self.annotations)
 
     def __getitem__(self, idx):
@@ -45,7 +44,7 @@ class DogDataset(Dataset):
         Arguments:
             idx (int): The index of the sampled item.
         """
-        # 路径记得改！！
+        # 路径记得对应
         lidar_path = os.path.join(self.lidar_dir, self.annotations.iloc[idx, 0])
         rgb_path = os.path.join(self.rgb_dir, self.annotations.iloc[idx, 1])
         video_path = os.path.join(self.video_dir, self.annotations.iloc[idx, 2])
@@ -68,7 +67,6 @@ class DogDataset(Dataset):
         # touch = io.read_image(touch_path, io.ImageReadMode.GRAY)
         # touch = touch_trans(touch)
         # pose = torch.tensor(np.array(pd.read_csv(pose_path)))
-
         # self.video_transform = transforms.ToTensorVideo()
 
         # 将维度顺序调整为(channels, batch_size, height, width)

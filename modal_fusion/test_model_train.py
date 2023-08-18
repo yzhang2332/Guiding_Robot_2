@@ -60,7 +60,7 @@ test_dataset = DogDataset(annotations_file='modal_fusion/datasets/test_data/proc
                           rgb_dir="modal_fusion/datasets/test_data/processed_data/rgb",
                           video_dir="modal_fusion/datasets/test_data/processed_data/video",
                           imu_dir="modal_fusion/datasets/test_data/processed_data/imu",
-                          point_cloud_dir="modal_fusion/datasets/test_data/processed_data/lidar",
+                          lidar_dir="modal_fusion/datasets/test_data/processed_data/lidar",
                           sensor_dir="modal_fusion/datasets/test_data/processed_data/sensor",
                           motor_dir="modal_fusion/datasets/test_data/processed_data/motor"
                           )
