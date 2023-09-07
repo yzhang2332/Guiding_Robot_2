@@ -748,7 +748,7 @@ class SwinTransformer3DModel(nn.Module):
         return x
 
 
-def swin_tiny_patch4_window7_224(num_classes=1000,pretrained = None, **kwargs):
+def swin_tiny_patch4_window7_224(num_classes=1000, pretrained = None, **kwargs):
     model = SwinTransformer3DModel(
         num_classes=num_classes,
         embed_dim=96,
